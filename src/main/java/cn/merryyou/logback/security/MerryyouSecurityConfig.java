@@ -82,7 +82,9 @@ public class MerryyouSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
 //        http.addFilterBefore(validateCodeFilter, UsernamePasswordAuthenticationFilter.class)
-        http.headers().frameOptions().disable().and()
+        http
+                .headers().frameOptions().disable() //有时候为了防止网页被别人的网站iframe，我们可以通过在服务端设置HTTP头部中的X-Frame-Options信息
+                .and()
                 .formLogin()//使用表单登录，不再使用默认httpBasic方式
                 .loginPage(SecurityConstants.DEFAULT_UNAUTHENTICATION_URL)//如果请求的URL需要认证则跳转的URL
                 .loginProcessingUrl(SecurityConstants.DEFAULT_SIGN_IN_PROCESSING_URL_FORM)//处理表单中自定义的登录URL
@@ -95,7 +97,7 @@ public class MerryyouSecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 .apply(merryyouSpringSocialConfigurer)//社交登录
                 .and()
-                .rememberMe()
+                .rememberMe()//允许配置“记住我”的验证
                 .tokenRepository(persistentTokenRepository())
                 .tokenValiditySeconds(securityProperties.getRememberMeSeconds())
                 .userDetailsService(userDetailsService)
@@ -108,12 +110,13 @@ public class MerryyouSecurityConfig extends WebSecurityConfigurerAdapter {
                 .expiredSessionStrategy(sessionInformationExpiredStrategy)
                 .and()
                 .and()
-                .logout()
+                .logout()//添加退出登录支持
                 .logoutUrl("/signOut")//默认退出地址/logout
                 .logoutSuccessUrl("/")//退出之后跳转到注册页面
                 .deleteCookies("JSESSIONID")
                 .and()
-                .authorizeRequests().antMatchers(SecurityConstants.DEFAULT_UNAUTHENTICATION_URL,
+                .authorizeRequests()//允许基于使用HttpServletRequest限制访问
+                .antMatchers(SecurityConstants.DEFAULT_UNAUTHENTICATION_URL,
                 SecurityConstants.DEFAULT_SIGN_IN_PROCESSING_URL_FORM,
                 SecurityConstants.DEFAULT_REGISTER_URL,
                 SecurityConstants.DEFAULT_SIGN_IN_PROCESSING_URL_MOBILE,
